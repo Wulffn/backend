@@ -228,7 +228,7 @@
           <password>${remote.password}</password>
           <!-- <username>${env.TOMCAT_USER} </username>-->
           <!--  <password>${env.TOMCAT_PASSWORD}</password>-->
-          <update>true</update>    
+          <update>true</update>
         </configuration>
        
         <dependencies>
