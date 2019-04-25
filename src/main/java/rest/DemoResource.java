@@ -90,7 +90,6 @@ public class DemoResource {
         return swappiFutureCalls();
     }
 
-
     public static String swappiFutureCalls() {
         ForkJoinPool executor = new ForkJoinPool(25,
                 ForkJoinPool.defaultForkJoinWorkerThreadFactory,
