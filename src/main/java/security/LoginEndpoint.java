@@ -49,6 +49,7 @@ public class LoginEndpoint {
       JsonObject responseJson = new JsonObject();
       responseJson.addProperty("username", username);
       responseJson.addProperty("token", token);
+      responseJson.addProperty("roles", new Gson().toJson(user.getRolesAsStrings()));
       return Response.ok(new Gson().toJson(responseJson)).build();
 
     } catch (JOSEException | AuthenticationException ex) {

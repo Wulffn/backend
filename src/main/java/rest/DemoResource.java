@@ -10,6 +10,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.security.RolesAllowed;
@@ -22,6 +30,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 import utils.PuSelector;
+import utils.SwappiData;
 
 /**
  * @author lam@cphbusiness.dk
@@ -78,34 +87,28 @@ public class DemoResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("apis")
     public String getFromAPIs() {
-        return getData();
+        return swappiFutureCalls();
     }
 
-    public String getSwappiData(int id) throws MalformedURLException, IOException {
-        URL url = new URL("https://swapi.co/api/people/" + id);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.setRequestProperty("Accept", "application/json;charset=UTF-8");
-        con.setRequestProperty("User-Agent", "server");
-        Scanner scan = new Scanner(con.getInputStream());
-        String jsonStr = null;
-        if (scan.hasNext()) {
-            jsonStr = scan.nextLine();
-        }
-        scan.close();
-        return jsonStr;
-    }
 
-    public String getData() {
-        try {
-            String a = getSwappiData(1);
-            String b = getSwappiData(2);
-            String c = getSwappiData(3);
-            String d = getSwappiData(4);
-            String e = getSwappiData(5);
-            return "{\"persons\": [ " + a + ", " + b + ", " + c + ", " + d + ", " + e + "]}";
-        } catch (IOException ex) {
-            return null;
+    public static String swappiFutureCalls() {
+        ForkJoinPool executor = new ForkJoinPool(25,
+                ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+                null, false);
+        List<Future<String>> futureArrayList = new ArrayList();
+        for (int i = 1; i < 6; i++) {
+            Callable<String> worker = new SwappiData(i);
+            futureArrayList.add(executor.submit(worker));
         }
+        List<String> res = new ArrayList();
+        futureArrayList.parallelStream().forEach(future -> {
+            try {
+                String getFutureStr = future.get(5, TimeUnit.SECONDS);
+                res.add(getFutureStr);
+            } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+
+            }
+        });
+        return new Gson().toJson(res);
     }
 }
