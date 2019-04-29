@@ -1,6 +1,7 @@
 package rest;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import entity.User;
 import java.io.IOException;
@@ -108,6 +109,6 @@ public class DemoResource {
 
             }
         });
-        return new Gson().toJson(res);
+        return res.toString();
     }
 }
